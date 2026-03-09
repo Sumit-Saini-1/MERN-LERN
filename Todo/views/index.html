@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: 97vh;
+            width: 98vw;
+        }
+
+        .input-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+        }
+
+        .todos-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+        }
+
+        input {
+            margin: 10px;
+            padding: 10px;
+        }
+
+        button {
+            margin: 10px;
+            width: 100px;
+            padding: 10px;
+        }
+
+        li {
+            list-style: none;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="input-container">
+            <input type="text" id="todo-input" placeholder="Enter todo">
+            <button id="add-todo">Add Todo</button>
+        </div>
+        <div class="todos-container">
+            <h1>Todos</h1>
+            <ul id="todos">
+                Todos will show up here
+            </ul>
+        </div>
+    </div>
+    <script>
+        const ul = document.getElementById("todos");
+        const input = document.getElementById("todo-input");
+        const button = document.getElementById("add-todo");
+
+        button.addEventListener("click", () => {
+            fetch("/todos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: input.value
+                })
+            })
+            .then(res => res.json())
+            .then(todos => {
+                displayTodos(todos);
+            });
+            input.value = "";
+        });
+        fetch("/todos")
+            .then(res => res.json())
+            .then(todos => {
+                displayTodos(todos);
+            });
+        function displayTodos(todos) {
+            if(todos.length === 0) {
+                ul.innerHTML = "Todos will show up here";
+            }
+            else {
+                ul.innerHTML = "";
+                todos.forEach(todo => {
+                    const li = document.createElement("li");
+                    li.innerText = todo.title;
+
+                    const completeButton = document.createElement("button");
+                    completeButton.innerText = todo?.completed ? "Incomplete" : "Complete";
+                    completeButton.addEventListener("click", () => {
+                        fetch(`/todos/${todo.id}`, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                completed: !todo.completed
+                            })
+                        }).then(res => res.json())
+                        .then(todos => {
+                            displayTodos(todos);
+                        });
+                    });
+                    li.appendChild(completeButton);
+                    
+                    const deleteButton = document.createElement("button");
+                    deleteButton.innerText = "Delete";
+                    deleteButton.addEventListener("click", () => {
+                        deleteTodo(todo.id);
+                    });
+                    li.appendChild(deleteButton);
+                    
+                    ul.appendChild(li);
+                });
+            }
+        }
+
+        function deleteTodo(id) {
+            fetch(`/todos/${id}`, {
+                method: "DELETE"
+            }).then(res => res.json())
+            .then(todos => {
+                displayTodos(todos);
+            });
+        }
+    </script>
+</body>
+
+</html>
