@@ -76,19 +76,23 @@
                     title: input.value
                 })
             })
-            .then(res => res.json())
-            .then(todos => {
-                displayTodos(todos);
-            });
+                .then(res => res.json())
+                .then(todos => {
+                    displayTodos(todos);
+                });
             input.value = "";
         });
-        fetch("/todos")
-            .then(res => res.json())
-            .then(todos => {
-                displayTodos(todos);
-            });
+
+        window.onload = () => {
+            fetch("/todos")
+                .then(res => res.json())
+                .then(todos => {
+                    displayTodos(todos);
+                });
+        }
+
         function displayTodos(todos) {
-            if(todos.length === 0) {
+            if (todos.length === 0) {
                 ul.innerHTML = "Todos will show up here";
             }
             else {
@@ -109,19 +113,19 @@
                                 completed: !todo.completed
                             })
                         }).then(res => res.json())
-                        .then(todos => {
-                            displayTodos(todos);
-                        });
+                            .then(todos => {
+                                displayTodos(todos);
+                            });
                     });
                     li.appendChild(completeButton);
-                    
+
                     const deleteButton = document.createElement("button");
                     deleteButton.innerText = "Delete";
                     deleteButton.addEventListener("click", () => {
                         deleteTodo(todo.id);
                     });
                     li.appendChild(deleteButton);
-                    
+
                     ul.appendChild(li);
                 });
             }
@@ -131,9 +135,9 @@
             fetch(`/todos/${id}`, {
                 method: "DELETE"
             }).then(res => res.json())
-            .then(todos => {
-                displayTodos(todos);
-            });
+                .then(todos => {
+                    displayTodos(todos);
+                });
         }
     </script>
 </body>
